@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Xcode 构建产物与用户数据
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+# Xcode 生成的 scheme（共享 scheme 保留，用户级排除）
+*.xcscheme.user*
+
+# Swift Package Manager
+.build/
+.swiftpm/

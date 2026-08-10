@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iOS 登录页 · 高保真交互原型</title>
+
+<!-- ============================================================
+  PART 0 · 全局设计令牌（CSS 变量）
+  与 README.md 中「设计令牌 → iOS 色值映射」一一对应
+============================================================ -->
+<style>
+:root{
+  /* 颜色 */
+  --c-primary-500:#5B7CFF;            /* 品牌主色 */
+  --c-primary-600:#4A6CF0;            /* 按压态 */
+  --c-primary-700:#3D5CE0;            /* 深按压 */
+  --c-secondary-500:#8A5CFF;          /* 品牌辅色 */
+  --c-gradient:linear-gradient(135deg,#5B7CFF 0%,#8A5CFF 100%);
+  --c-bg:#F7F8FC;                     /* 页面背景 */
+  --c-surface:#FFFFFF;                /* 输入框/卡片 */
+  --c-surface-muted:#F3F4F8;          /* 禁用底 */
+  --c-text-1:#1A1D2B;                 /* 主文字 */
+  --c-text-2:#5A6072;                 /* 次要文字 */
+  --c-text-3:#9AA1B2;                 /* 占位符 */
+  --c-border:#E6E8F0;                 /* 默认边框 */
+  --c-border-2:#D5D9E5;               /* 次级边框 */
+  --c-focus-ring:rgba(91,124,255,.16);
+  --c-success:#34C759;
+  --c-error:#FF3B30;
+  --c-error-bg:#FFF0EF;
+  --c-toast-bg:rgba(26,29,43,.88);
+  --c-frost:rgba(255,255,255,.55);
+  --c-dim:rgba(20,24,40,.5);
+
+  /* 字体 */
+  --font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+  --fs-hero:34px; --fs-title:22px; --fs-body:17px; --fs-input:15px;
+  --fs-caption:13px; --fs-micro:12px; --fs-btn:17px;
+
+  /* 圆角 */
+  --r-xs:8px; --r-sm:10px; --r-input:14px; --r-card:20px;
+  --r-modal:24px; --r-btn:28px; --r-pill:999px; --r-otp:12px;
+
+  /* 阴影 */
+  --shadow-input:0 1px 2px rgba(16,24,40,.05);
+  --shadow-btn:0 10px 24px rgba(91,124,255,.38);
+  --shadow-card:0 12px 32px rgba(16,24,40,.08);
+  --shadow-modal:0 24px 64px rgba(16,24,40,.18);
+  --shadow-toast:0 8px 24px rgba(16,24,40,.16);
+
+  /* 动效 */
+  --dur-fast:150ms; --dur-base:250ms; --dur-slow:420ms;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);
+  --ease-spring:cubic-bezier(.34,1.3,.64,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--font-family);
+  background:#E9ECF7;
+  color:var(--c-text-1);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  user-select:none;
+}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+input{font-family:inherit}
+a{color:var(--c-primary-500);text-decoration:none}
+
+/* ============ 舞台与外框 ============ */
+.stage{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  z-index:1;
+}
+/* 背景氛围光斑 */
+.stage::before,.stage::after{
+  content:"";position:absolute;border-radius:50%;filter:blur(90px);z-index:0;
+}
+.stage::before{width:420px;height:420px;background:rgba(91,124,255,.22);top:-120px;left:-80px}
+.stage::after{width:380px;height:380px;background:rgba(138,92,255,.18);bottom:-120px;right:-60px}
+
+.device-wrap{position:relative;z-index:1}
+.device{
+  width:390px;height:844px;background:#0B0E1A;border-radius:58px;padding:10px;
+  box-shadow:0 40px 90px rgba(16,24,40,.38), inset 0 0 0 1px rgba(255,255,255,.05);
+  transform-origin:top left;
+}
+/* 侧键 */
+.device::before,.device::after{content:"";position:absolute;width:3px;background:#0B0E1A;border-radius:2px}
+.device::before{right:4px;top:180px;height:64px}
+.device::after{left:4px;top:140px;height:96px}
+
+.device-screen{
+  width:100%;height:100%;background:var(--c-bg);border-radius:48px;overflow:hidden;position:relative;
+}
+.dynamic-island{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:126px;height:37px;background:#000;border-radius:20px;z-index:60;
+}
+.status-bar{
+  position:absolute;top:0;left:0;right:0;height:54px;z-index:50;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 34px;color:var(--c-text-1);font-size:15px;font-weight:600;
+}
+.status-bar .sb-group{display:flex;align-items:center;gap:6px}
+
+/* ============ 应用容器 ============ */
+.app{position:absolute;inset:0;overflow:hidden}
+.page{
+  position:absolute;inset:0;background:var(--c-bg);padding:84px 24px 40px;
+  overflow-y:auto;scrollbar-width:none;
+  transition:transform var(--dur-slow) var(--ease-out), opacity var(--dur-slow) var(--ease-out);
+}
+.page::-webkit-scrollbar{display:none}
+.app.kb-open .page{padding-bottom:260px}
+.page-login.is-exit{transform:translateX(-28%);opacity:.4}
+.page-register{transform:translateX(100%);z-index:2}
+.page-register.is-enter{transform:translateX(0)}
+
+/* ============ 头部 ============ */
+.auth-header{text-align:center;margin-bottom:28px}
+.logo{
+  width:64px;height:64px;border-radius:18px;background:var(--c-gradient);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 18px;
+  box-shadow:0 12px 28px rgba(91,124,255,.35);
+}
+.auth-title{font-size:var(--fs-hero);font-weight:700;letter-spacing:.5px}
+.auth-subtitle{margin-top:8px;font-size:var(--fs-body);color:var(--c-text-2)}
+
+/* ============ Tab 切换 ============ */
+.tabs{
+  position:relative;display:flex;background:var(--c-surface-muted);
+  border-radius:var(--r-pill);padding:4px;margin-bottom:24px;
+}
+.tab{
+  flex:1;height:44px;border-radius:var(--r-pill);font-size:15px;font-weight:600;
+  color:var(--c-text-2);position:relative;z-index:2;transition:color var(--dur-fast);
+}
+.tab.is-active{color:var(--c-primary-700)}
+.tab-indicator{
+  position:absolute;top:4px;bottom:4px;left:4px;width:50%;border-radius:var(--r-pill);
+  background:#fff;box-shadow:0 4px 12px rgba(16,24,40,.10);
+  transition:transform var(--dur-base) var(--ease-spring), width var(--dur-base) var(--ease-spring);
+}
+
+/* ============ 表单面板 ============ */
+.tab-panel[hidden]{display:none}
+.tab-panel.panel-enter{animation:fadeInUp var(--dur-base) var(--ease-out)}
+.field{margin-bottom:18px}
+.field-label{
+  display:block;font-size:var(--fs-caption);font-weight:600;color:var(--c-text-2);
+  margin-bottom:8px;padding-left:2px;
+}
+.input-box{
+  position:relative;display:flex;align-items:center;
+  background:var(--c-surface);border:1.5px solid var(--c-border);border-radius:var(--r-input);
+  transition:border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.input-box:focus-within{border-color:var(--c-primary-500);box-shadow:0 0 0 4px var(--c-focus-ring)}
+.input-box.is-error{border-color:var(--c-error);box-shadow:0 0 0 4px rgba(255,59,48,.12)}
+.input-box.is-shake{animation:shake .5s var(--ease-in-out)}
+.input-icon{
+  flex:none;width:20px;height:20px;margin-left:16px;color:var(--c-text-3);
+  transition:color var(--dur-fast);
+}
+.input-box:focus-within .input-icon{color:var(--c-primary-500)}
+.text-input{
+  flex:1;min-width:0;border:none;outline:none;background:transparent;
+  font-size:var(--fs-input);font-weight:500;color:var(--c-text-1);
+  padding:15px 8px;caret-color:var(--c-primary-500);
+}
+.text-input::placeholder{color:var(--c-text-3);font-weight:400}
+.input-action{
+  flex:none;width:34px;height:34px;margin-right:10px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;color:var(--c-text-3);
+  transition:color var(--dur-fast), background var(--dur-fast);
+}
+.input-action:hover{background:var(--c-surface-muted);color:var(--c-text-2)}
+.input-action svg{width:18px;height:18px}
+.field-error{
+  display:flex;align-items:center;gap:5px;margin-top:7px;padding:0 2px;
+  font-size:var(--fs-micro);color:var(--c-error);
+}
+.field-error svg{width:13px;height:13px;flex:none}
+[hidden]{display:none!important}
+
+/* ============ OTP 验证码 ============ */
+.otp-row{display:flex;gap:10px;align-items:stretch}
+.otp{position:relative;flex:1;min-width:0}
+.otp-input{
+  position:absolute;inset:0;width:100%;z-index:2;border-radius:var(--r-input);
+  border:none;outline:none;background:transparent;text-align:center;
+  font-size:var(--fs-body);color:transparent;caret-color:var(--c-primary-500);
+}
+.otp-cells{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.otp-cell{
+  height:54px;background:var(--c-surface);border:1.5px solid var(--c-border);
+  border-radius:var(--r-otp);display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:600;color:var(--c-text-1);
+  transition:border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.otp-cell.is-current{border-color:var(--c-primary-500);box-shadow:0 0 0 4px var(--c-focus-ring)}
+.otp.is-error .otp-cell{border-color:var(--c-error);box-shadow:0 0 0 4px rgba(255,59,48,.12)}
+.otp.is-error{border:none}
+.otp.is-shake .otp-cells{animation:shake .5s var(--ease-in-out)}
+.send-code{
+  flex:none;height:54px;min-width:108px;padding:0 14px;border-radius:var(--r-otp);
+  background:rgba(91,124,255,.08);border:1.5px solid rgba(91,124,255,.28);
+  color:var(--c-primary-500);font-size:14px;font-weight:600;
+  transition:opacity var(--dur-fast), background var(--dur-fast), color var(--dur-fast);
+}
+.send-code:active:not(:disabled){background:rgba(91,124,255,.16)}
+.send-code:disabled{background:var(--c-surface-muted);border-color:var(--c-border);color:var(--c-text-3);cursor:not-allowed}
+
+/* ============ 协议勾选 ============ */
+.agreement{display:flex;gap:10px;align-items:flex-start;margin:6px 2px 24px;cursor:pointer}
+.agreement input{position:absolute;opacity:0;pointer-events:none}
+.agreement-box{
+  flex:none;width:22px;height:22px;margin-top:1px;border-radius:7px;
+  border:1.5px solid var(--c-border-2);background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  transition:background var(--dur-fast) var(--ease-out),border-color var(--dur-fast),box-shadow var(--dur-fast);
+}
+.agreement-box svg{
+  width:13px;height:13px;opacity:0;transform:scale(.4);
+  transition:opacity var(--dur-fast) var(--ease-spring),transform var(--dur-fast) var(--ease-spring);
+}
+.agreement input:checked + .agreement-box{
+  background:var(--c-gradient);border-color:transparent;
+  box-shadow:0 4px 12px rgba(91,124,255,.35);
+}
+.agreement input:checked + .agreement-box svg{opacity:1;transform:scale(1)}
+.agreement-text{font-size:var(--fs-micro);color:var(--c-text-2);line-height:1.6}
+.agreement-text a{font-weight:600}
+
+/* ============ 主按钮 ============ */
+.btn-login{
+  width:100%;height:56px;border-radius:var(--r-btn);
+  background:var(--c-gradient);color:#fff;font-size:var(--fs-btn);font-weight:600;
+  box-shadow:var(--shadow-btn);letter-spacing:2px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform var(--dur-fast) var(--ease-out),opacity var(--dur-fast),
+             box-shadow var(--dur-fast),background var(--dur-base);
+}
+.btn-login:active:not(:disabled){transform:scale(.98)}
+.btn-login:disabled{opacity:.4;box-shadow:none;cursor:not-allowed}
+.btn-login.is-loading{opacity:.85;box-shadow:none}
+.btn-login.is-success{background:var(--c-success);box-shadow:0 10px 24px rgba(52,199,89,.35)}
+.spinner{
+  width:18px;height:18px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.35);border-top-color:#fff;
+  animation:spin .8s linear infinite;
+}
+
+/* ============ 辅助链接 ============ */
+.link-row{display:flex;justify-content:center;margin-top:16px}
+.link-btn{font-size:var(--fs-caption);color:var(--c-text-2);font-weight:500;padding:6px 10px}
+.link-btn:active{opacity:.6}
+.footer-divider{
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  margin-top:28px;font-size:var(--fs-caption);color:var(--c-text-3);
+}
+.footer-divider .link-btn{color:var(--c-primary-500);font-weight:600;font-size:14px}
+
+/* ============ 注册页 ============ */
+.back-btn{
+  position:absolute;top:66px;left:20px;width:36px;height:36px;border-radius:12px;
+  background:var(--c-surface);display:flex;align-items:center;justify-content:center;
+  color:var(--c-text-1);box-shadow:var(--shadow-input);
+  transition:transform var(--dur-fast);
+}
+.back-btn:active{transform:scale(.9)}
+
+/* ============ 弹窗 ============ */
+.modal-backdrop{
+  position:absolute;inset:0;z-index:70;background:var(--c-dim);
+  opacity:0;pointer-events:none;transition:opacity var(--dur-base) var(--ease-out);
+}
+.modal-backdrop.is-open{opacity:1;pointer-events:auto}
+.modal-sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:71;
+  background:var(--c-surface);border-radius:var(--r-modal) var(--r-modal) 0 0;
+  padding:28px 24px calc(28px + 20px);transform:translateY(105%);
+  transition:transform var(--dur-slow) var(--ease-out);
+  box-shadow:var(--shadow-modal);
+}
+.modal-backdrop.is-open .modal-sheet{transform:translateY(0)}
+.modal-handle{
+  width:36px;height:5px;border-radius:3px;background:var(--c-border-2);
+  margin:0 auto 18px;
+}
+.modal-title{font-size:20px;font-weight:700;margin-bottom:6px}
+.modal-desc{font-size:var(--fs-caption);color:var(--c-text-2);margin-bottom:20px;line-height:1.6}
+.modal-close{
+  position:absolute;top:18px;right:18px;width:32px;height:32px;border-radius:50%;
+  background:var(--c-surface-muted);color:var(--c-text-2);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.modal-close:active{transform:scale(.9)}
+.btn-secondary{
+  width:100%;height:52px;border-radius:var(--r-btn);background:var(--c-gradient);
+  color:#fff;font-size:16px;font-weight:600;box-shadow:var(--shadow-btn);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform var(--dur-fast),opacity var(--dur-fast);
+}
+.btn-secondary:active:not(:disabled){transform:scale(.98)}
+.btn-secondary:disabled{opacity:.4;box-shadow:none;cursor:not-allowed}
+
+/* ============ Toast ============ */
+.toast{
+  position:absolute;top:72px;left:50%;z-index:90;
+  transform:translateX(-50%) translateY(-16px);
+  background:var(--c-toast-bg);color:#fff;font-size:var(--fs-caption);
+  padding:11px 18px;border-radius:var(--r-pill);display:flex;align-items:center;gap:8px;
+  opacity:0;pointer-events:none;
+  transition:opacity var(--dur-base) var(--ease-out),transform var(--dur-base) var(--ease-out);
+  box-shadow:var(--shadow-toast);max-width:320px;
+}
+.toast.is-visible{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast svg{width:16px;height:16px;flex:none}
+.toast[data-type="success"] svg{color:#69F0A0}
+.toast[data-type="error"] svg{color:#FF8A80}
+
+/* ============ 成功遮罩 ============ */
+.success-overlay{
+  position:absolute;inset:0;z-index:80;background:var(--c-gradient);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity var(--dur-slow) var(--ease-out);
+}
+.success-overlay.is-visible{opacity:1;pointer-events:auto}
+.success-overlay .su-inner{transform:scale(.92);transition:transform var(--dur-slow) var(--ease-out)}
+.success-overlay.is-visible .su-inner{transform:scale(1)}
+.su-circle circle{stroke-dasharray:340;stroke-dashoffset:340;animation:drawCircle .7s var(--ease-out) .1s forwards}
+.su-circle path{stroke-dasharray:60;stroke-dashoffset:60;animation:drawCheck .5s var(--ease-out) .55s forwards}
+.su-title{
+  margin-top:28px;color:#fff;font-size:26px;font-weight:700;letter-spacing:2px;
+  opacity:0;transform:translateY(12px);
+  animation:fadeUp .5s var(--ease-out) .7s forwards;
+}
+.su-sub{
+  margin-top:10px;color:rgba(255,255,255,.85);font-size:var(--fs-caption);
+  opacity:0;transform:translateY(12px);
+  animation:fadeUp .5s var(--ease-out) .85s forwards;
+}
+
+/* ============ 模拟键盘（纯视觉） ============ */
+.mock-keyboard{
+  position:absolute;left:0;right:0;bottom:0;z-index:55;
+  background:rgba(241,243,248,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--c-border);
+  padding:10px 14px calc(14px + 8px);
+  transform:translateY(105%);transition:transform var(--dur-base) var(--ease-out);
+}
+.mock-keyboard.is-open{transform:translateY(0)}
+.kb-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-bottom:10px}
+.kb-key{
+  height:42px;border-radius:8px;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.10);
+  display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;
+}
+.kb-key.blank{background:transparent;box-shadow:none}
+.kb-row2{display:flex;justify-content:center}
+.kb-row2 .kb-key{flex:1;max-width:200px;background:var(--c-surface-muted);color:var(--c-text-2);font-size:13px;font-weight:500}
+
+/* ============ 演示控制条 ============ */
+.demo-panel{
+  position:fixed;right:24px;bottom:24px;z-index:100;display:flex;gap:8px;
+}
+.demo-panel button{
+  padding:9px 16px;border-radius:var(--r-pill);background:rgba(255,255,255,.9);
+  box-shadow:0 8px 24px rgba(16,24,40,.14);font-size:13px;font-weight:600;color:var(--c-text-1);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:transform var(--dur-fast);
+}
+.demo-panel button:active{transform:scale(.95)}
+.demo-hint{
+  position:fixed;left:24px;bottom:24px;z-index:100;
+  font-size:12px;color:var(--c-text-2);background:rgba(255,255,255,.85);
+  padding:8px 14px;border-radius:var(--r-pill);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 8px 24px rgba(16,24,40,.10);
+}
+
+/* ============ 关键帧 ============ */
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes drawCircle{to{stroke-dashoffset:0}}
+@keyframes drawCheck{to{stroke-dashoffset:0}}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+  PART 1 · HTML 结构
+  设备外框（iPhone 15 Pro 390×844） + 登录页 / 注册页 / 全局层
+============================================================ -->
+<div class="stage">
+  <div class="device-wrap" id="deviceWrap">
+    <div class="device" id="device">
+      <div class="device-screen">
+
+        <div class="dynamic-island"></div>
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <span class="sb-group" aria-hidden="true">
+            <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="9" width="3" height="3" rx="0.6" fill="currentColor"/><rect x="5" y="6.5" width="3" height="5.5" rx="0.6" fill="currentColor"/><rect x="10" y="4" width="3" height="8" rx="0.6" fill="currentColor"/><rect x="15" y="1.5" width="3" height="10.5" rx="0.6" fill="currentColor" opacity="0.35"/></svg>
+            <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 9.2a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6z" fill="currentColor"/><path d="M8.5 6.6c1.7 0 3.2.7 4.4 1.8l1.2-1.2a7.4 7.4 0 0 0-11.2 0l1.2 1.2A6.2 6.2 0 0 1 8.5 6.6z" fill="currentColor"/><path d="M8.5 4c2.9 0 5.5 1.2 7.4 3.1l1.2-1.2a10.6 10.6 0 0 0-17.2 0l1.2 1.2A9.4 9.4 0 0 1 8.5 4z" fill="currentColor"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3.2" fill="none" stroke="currentColor" opacity="0.4"/><rect x="2" y="2" width="18" height="8" rx="1.8" fill="currentColor"/><path d="M23.5 4v4a2 2 0 0 0 0-4z" fill="currentColor" opacity="0.4"/></svg>
+          </span>
+        </div>
+
+        <div class="app" id="app">
+
+          <!-- ======== 登录页 ======== -->
+          <section class="page page-login" id="pageLogin" aria-label="登录">
+
+            <header class="auth-header">
+              <div class="logo" aria-hidden="true">
+                <svg width="26" height="30" viewBox="0 0 24 28" fill="#fff"><path d="M13 1 3 16h7l-1 12 10-16h-7l1-11z"/></svg>
+              </div>
+              <h1 class="auth-title">欢迎回来</h1>
+              <p class="auth-subtitle">登录后享受更完整的功能体验</p>
+            </header>
+
+            <div class="tabs" role="tablist" aria-label="登录方式">
+              <button class="tab is-active" role="tab" id="tab-password" data-tab="password" aria-selected="true">密码登录</button>
+              <button class="tab" role="tab" id="tab-sms" data-tab="sms" aria-selected="false">验证码登录</button>
+              <span class="tab-indicator" id="tabIndicator" aria-hidden="true"></span>
+            </div>
+
+            <!-- Tab 1：密码登录 -->
+            <form class="tab-panel" data-panel="password" novalidate>
+              <div class="field" data-field-group="email">
+                <label class="field-label" for="emailInput">邮箱 / 账号</label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="4" width="16" height="12" rx="2.5"/><path d="m3 6 7 5 7-5"/></svg>
+                  <input class="text-input" id="emailInput" data-field="email" type="email"
+                         placeholder="请输入邮箱或账号" autocomplete="email" inputmode="email" maxlength="100">
+                  <button type="button" class="input-action clear-btn" data-clear="email" aria-label="清空" hidden>
+                    <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" opacity="0.15"/><path d="M6.8 6.8a.8.8 0 0 1 1.13 0L10 8.87l2.07-2.07a.8.8 0 1 1 1.13 1.13L11.13 10l2.07 2.07a.8.8 0 1 1-1.13 1.13L10 11.13l-2.07 2.07a.8.8 0 1 1-1.13-1.13L8.87 10 6.8 7.93a.8.8 0 0 1 0-1.13z"/></svg>
+                  </button>
+                </div>
+                <p class="field-error" data-error="email" role="alert" aria-live="polite" hidden>
+                  <svg viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="7" opacity="0.15"/><path d="M7 3.5a.8.8 0 0 1 .8.8v3.2a.8.8 0 1 1-1.6 0V4.3a.8.8 0 0 1 .8-.8zM7 9.6a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z"/></svg>
+                  <span></span>
+                </p>
+              </div>
+
+              <div class="field" data-field-group="password">
+                <label class="field-label" for="passwordInput">密码</label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="9" width="12" height="8" rx="2.5"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9"/></svg>
+                  <input class="text-input" id="passwordInput" data-field="password" type="password"
+                         placeholder="6-20 位，含字母和数字" autocomplete="current-password" maxlength="20">
+                  <button class="input-action pwd-toggle" data-toggle="password" aria-label="显示密码" aria-pressed="false" type="button">
+                    <svg class="icon-eye" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 10s2.8-4.5 7.5-4.5 7.5 4.5 7.5 4.5-2.8 4.5-7.5 4.5S2.5 10 2.5 10z"/><circle cx="10" cy="10" r="2.2"/></svg>
+                    <svg class="icon-eye-off" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M3 3l14 14"/><path d="M10.6 5.1A9.3 9.3 0 0 0 2.5 10s1.6 2.6 4.2 4M14.6 6.9A9.2 9.2 0 0 1 17.5 10s-1.6 2.6-4.2 4.1"/><path d="M9.4 14.9a9.2 9.2 0 0 1-2.7-.8"/></svg>
+                  </button>
+                </div>
+                <p class="field-error" data-error="password" role="alert" aria-live="polite" hidden>
+                  <svg viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="7" opacity="0.15"/><path d="M7 3.5a.8.8 0 0 1 .8.8v3.2a.8.8 0 1 1-1.6 0V4.3a.8.8 0 0 1 .8-.8zM7 9.6a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z"/></svg>
+                  <span></span>
+                </p>
+              </div>
+            </form>
+
+            <!-- Tab 2：验证码登录 -->
+            <form class="tab-panel" data-panel="sms" novalidate hidden>
+              <div class="field" data-field-group="phone">
+                <label class="field-label" for="phoneInput">手机号</label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="1.5" width="12" height="17" rx="3"/><path d="M8.5 15.5h3"/></svg>
+                  <span style="flex:none;color:var(--c-text-2);font-weight:500;font-size:15px">+86</span>
+                  <input class="text-input" id="phoneInput" data-field="phone" type="tel"
+                         placeholder="请输入手机号" autocomplete="tel" inputmode="numeric" maxlength="11">
+                  <button type="button" class="input-action clear-btn" data-clear="phone" aria-label="清空" hidden>
+                    <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" opacity="0.15"/><path d="M6.8 6.8a.8.8 0 0 1 1.13 0L10 8.87l2.07-2.07a.8.8 0 1 1 1.13 1.13L11.13 10l2.07 2.07a.8.8 0 1 1-1.13 1.13L10 11.13l-2.07 2.07a.8.8 0 1 1-1.13-1.13L8.87 10 6.8 7.93a.8.8 0 0 1 0-1.13z"/></svg>
+                  </button>
+                </div>
+                <p class="field-error" data-error="phone" role="alert" aria-live="polite" hidden>
+                  <svg viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="7" opacity="0.15"/><path d="M7 3.5a.8.8 0 0 1 .8.8v3.2a.8.8 0 1 1-1.6 0V4.3a.8.8 0 0 1 .8-.8zM7 9.6a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z"/></svg>
+                  <span></span>
+                </p>
+              </div>
+
+              <div class="field" data-field-group="sms">
+                <label class="field-label" for="otpInput">验证码</label>
+                <div class="otp-row">
+                  <div class="otp" id="otpBox">
+                    <input class="otp-input" id="otpInput" data-field="sms" type="text"
+                           inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+                           aria-label="6 位验证码">
+                    <div class="otp-cells" id="otpCells" aria-hidden="true">
+                      <div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div>
+                      <div class="otp-cell"></div><div class="otp-cell"></div><div class="otp-cell"></div>
+                    </div>
+                  </div>
+                  <button class="send-code" id="sendCodeBtn" type="button">获取验证码</button>
+                </div>
+                <p class="field-error" data-error="sms" role="alert" aria-live="polite" hidden>
+                  <svg viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="7" opacity="0.15"/><path d="M7 3.5a.8.8 0 0 1 .8.8v3.2a.8.8 0 1 1-1.6 0V4.3a.8.8 0 0 1 .8-.8zM7 9.6a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z"/></svg>
+                  <span></span>
+                </p>
+              </div>
+            </form>
+
+            <!-- 协议 + 主按钮 + 链接 -->
+            <label class="agreement">
+              <input type="checkbox" id="agreeCheck" aria-label="同意用户协议与隐私政策">
+              <span class="agreement-box">
+                <svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5 5.8 11 11.5 3.5"/></svg>
+              </span>
+              <span class="agreement-text">我已阅读并同意
+                <a href="#" data-doc="user">《用户协议》</a>与<a href="#" data-doc="privacy">《隐私政策》</a>
+              </span>
+            </label>
+
+            <button class="btn-login" id="loginBtn" disabled>登 录</button>
+
+            <div class="link-row">
+              <button class="link-btn" id="forgotBtn">忘记密码？</button>
+            </div>
+
+            <div class="footer-divider">
+              还没有账号？<button class="link-btn" id="goRegisterBtn">立即注册</button>
+            </div>
+          </section>
+
+          <!-- ======== 注册页（stub） ======== -->
+          <section class="page page-register" id="pageRegister" aria-label="注册" hidden>
+            <button class="back-btn" id="backBtn" aria-label="返回登录">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4.5 7 10l5.5 5.5"/></svg>
+            </button>
+
+            <header class="auth-header">
+              <div class="logo" aria-hidden="true">
+                <svg width="26" height="30" viewBox="0 0 24 28" fill="#fff"><path d="M13 1 3 16h7l-1 12 10-16h-7l1-11z"/></svg>
+              </div>
+              <h1 class="auth-title">创建账号</h1>
+              <p class="auth-subtitle">填写以下信息，即刻开始体验</p>
+            </header>
+
+            <form class="register-form" novalidate>
+              <div class="field" data-field-group="reg-phone">
+                <label class="field-label" for="regPhone">手机号</label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="1.5" width="12" height="17" rx="3"/><path d="M8.5 15.5h3"/></svg>
+                  <span style="flex:none;color:var(--c-text-2);font-weight:500;font-size:15px">+86</span>
+                  <input class="text-input" id="regPhone" data-field="reg-phone" type="tel"
+                         placeholder="请输入手机号" autocomplete="tel" inputmode="numeric" maxlength="11">
+                </div>
+                <p class="field-error" data-error="reg-phone" role="alert" aria-live="polite" hidden>
+                  <svg viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="7" opacity="0.15"/><path d="M7 3.5a.8.8 0 0 1 .8.8v3.2a.8.8 0 1 1-1.6 0V4.3a.8.8 0 0 1 .8-.8zM7 9.6a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z"/></svg>
+                  <span></span>
+                </p>
+              </div>
+
+              <div class="field" data-field-group="reg-password">
+                <label class="field-label" for="regPassword">设置密码</label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="9" width="12" height="8" rx="2.5"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9"/></svg>
+                  <input class="text-input" id="regPassword" data-field="reg-password" type="password"
+                         placeholder="6-20 位，含字母和数字" autocomplete="new-password" maxlength="20">
+                  <button class="input-action pwd-toggle" data-toggle="reg-password" aria-label="显示密码" aria-pressed="false" type="button">
+                    <svg class="icon-eye" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 10s2.8-4.5 7.5-4.5 7.5 4.5 7.5 4.5-2.8 4.5-7.5 4.5S2.5 10 2.5 10z"/><circle cx="10" cy="10" r="2.2"/></svg>
+                    <svg class="icon-eye-off" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M3 3l14 14"/><path d="M10.6 5.1A9.3 9.3 0 0 0 2.5 10s1.6 2.6 4.2 4M14.6 6.9A9.2 9.2 0 0 1 17.5 10s-1.6 2.6-4.2 4.1"/><path d="M9.4 14.9a9.2 9.2 0 0 1-2.7-.8"/></svg>
+                  </button>
+                </div>
+                <p class="field-error" data-error="reg-password" role="alert" aria-live="polite" hidden>
+                  <svg viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="7" opacity="0.15"/><path d="M7 3.5a.8.8 0 0 1 .8.8v3.2a.8.8 0 1 1-1.6 0V4.3a.8.8 0 0 1 .8-.8zM7 9.6a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z"/></svg>
+                  <span></span>
+                </p>
+              </div>
+
+              <div class="field" data-field-group="reg-confirm">
+                <label class="field-label" for="regConfirm">确认密码</label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="9" width="12" height="8" rx="2.5"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9"/></svg>
+                  <input class="text-input" id="regConfirm" data-field="reg-confirm" type="password"
+                         placeholder="请再次输入密码" autocomplete="new-password" maxlength="20">
+                </div>
+                <p class="field-error" data-error="reg-confirm" role="alert" aria-live="polite" hidden>
+                  <svg viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="7" opacity="0.15"/><path d="M7 3.5a.8.8 0 0 1 .8.8v3.2a.8.8 0 1 1-1.6 0V4.3a.8.8 0 0 1 .8-.8zM7 9.6a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z"/></svg>
+                  <span></span>
+                </p>
+              </div>
+            </form>
+
+            <label class="agreement">
+              <input type="checkbox" id="agreeCheckReg" aria-label="同意用户协议与隐私政策">
+              <span class="agreement-box">
+                <svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5 5.8 11 11.5 3.5"/></svg>
+              </span>
+              <span class="agreement-text">我已阅读并同意
+                <a href="#" data-doc="user">《用户协议》</a>与<a href="#" data-doc="privacy">《隐私政策》</a>
+              </span>
+            </label>
+
+            <button class="btn-login" id="regBtn" disabled>注 册</button>
+          </section>
+
+          <!-- ======== 忘记密码弹窗 ======== -->
+          <div class="modal-backdrop" id="forgotModal" role="dialog" aria-modal="true" aria-label="忘记密码">
+            <div class="modal-sheet">
+              <div class="modal-handle"></div>
+              <button class="modal-close" id="forgotClose" aria-label="关闭">✕</button>
+              <h2 class="modal-title">忘记密码</h2>
+              <p class="modal-desc">输入注册时使用的手机号或邮箱，我们将发送重置指引。</p>
+              <div class="field" style="margin-bottom:20px">
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="4" width="16" height="12" rx="2.5"/><path d="m3 6 7 5 7-5"/></svg>
+                  <input class="text-input" id="forgotInput" type="text" placeholder="手机号或邮箱">
+                </div>
+              </div>
+              <button class="btn-secondary" id="forgotSubmit">发送重置指引</button>
+            </div>
+          </div>
+
+          <!-- ======== Toast ======== -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+          <!-- ======== 登录成功遮罩 ======== -->
+          <div class="success-overlay" id="successOverlay" aria-hidden="true">
+            <div class="su-inner">
+              <svg class="su-circle" width="120" height="120" viewBox="0 0 120 120" aria-hidden="true">
+                <circle cx="60" cy="60" r="54" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.65)" stroke-width="3"/>
+                <path d="M40 62l14 14 26-28" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div class="su-title">登录成功</div>
+              <div class="su-sub">欢迎回来，开始探索吧</div>
+            </div>
+          </div>
+
+          <!-- ======== 模拟键盘（纯视觉） ======== -->
+          <div class="mock-keyboard" id="mockKeyboard" aria-hidden="true">
+            <div class="kb-grid">
+              <div class="kb-key">1</div><div class="kb-key">2</div><div class="kb-key">3</div>
+              <div class="kb-key">4</div><div class="kb-key">5</div><div class="kb-key">6</div>
+              <div class="kb-key">7</div><div class="kb-key">8</div><div class="kb-key">9</div>
+              <div class="kb-key blank"></div>
+            </div>
+            <div class="kb-row2"><button class="kb-key" id="kbDismiss">收起键盘</button></div>
+          </div>
+
+        </div><!-- /app -->
+      </div><!-- /device-screen -->
+    </div><!-- /device -->
+  </div><!-- /device-wrap -->
+</div><!-- /stage -->
+
+<!-- 演示控制条 -->
+<div class="demo-hint">登录页 · 高保真交互原型</div>
+<div class="demo-panel">
+  <button id="demoReset">重置演示</button>
+  <button id="demoKb">键盘开关</button>
+</div>
+
+<!-- ============================================================
+  PART 2 · 交互逻辑
+============================================================ -->
+<script>
+"use strict";
+
+/* ---------- 工具 ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ANIM = reducedMotion ? 0 : 1; // 动效系数（reduced-motion 时跳过动画延时）
+
+/* ---------- 文案（集中维护，便于 PM 修改） ---------- */
+const TEXT = {
+  titleLogin: '欢迎回来',
+  subtitleLogin: '登录后享受更完整的功能体验',
+  tabPassword: '密码登录',
+  tabSms: '验证码登录',
+  btnLogin: '登 录',
+  btnRegister: '注 册',
+  loginLoading: '登录中…',
+  loginSuccess: '登录成功',
+  loginSuccessSub: '欢迎回来，开始探索吧',
+  sendCode: '获取验证码',
+  sendCodeAgain: '重新获取',
+  countdown: n => `${n} 秒后重新获取`,
+  clear: '清空',
+  error: {
+    email: '请输入正确的邮箱或账号',
+    password: '密码需为 6-20 位，且包含字母和数字',
+    phone: '请输入正确的手机号',
+    sms: '请输入 6 位验证码',
+    'reg-phone': '请输入正确的手机号',
+    'reg-password': '密码需为 6-20 位，且包含字母和数字',
+    'reg-confirm': '两次输入的密码不一致',
+  },
+  toast: {
+    codeSent: '验证码已发送',
+    needAgree: '请先阅读并同意用户协议',
+    protocol: name => `${name}内容为演示占位`,
+    resetSent: '重置指引已发送',
+    registerOK: '已模拟注册成功',
+    demoDone: '演示已完成',
+    wrong: '账号或密码错误',
+  },
+};
+
+/* ---------- 校验规则 ---------- */
+const validators = {
+  email: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+  password: v => /^(?=.*[A-Za-z])(?=.*\d)[\w@#$%^&*+=!.-]{6,20}$/.test(v),
+  phone: v => /^1[3-9]\d{9}$/.test(v.trim()),
+  sms: v => /^\d{6}$/.test(v.trim()),
+  'reg-phone': v => /^1[3-9]\d{9}$/.test(v.trim()),
+  'reg-password': v => /^(?=.*[A-Za-z])(?=.*\d)[\w@#$%^&*+=!.-]{6,20}$/.test(v),
+  'reg-confirm': (v, all) => v === (all['reg-password'] || ''),
+};
+
+/* ---------- 状态 ---------- */
+const state = {
+  tab: 'password',          // password | sms
+  countLeft: 0,             // 验证码倒计时
+  codeSent: false,          // 是否已发送过验证码
+  timerId: null,
+  submitting: false,        // 登录中防连点
+  transitioning: false,     // 页面过渡锁
+  keyboardOpen: false,
+};
+
+/* ---------- DOM 引用 ---------- */
+const app = $('#app');
+const pageLogin = $('#pageLogin');
+const pageRegister = $('#pageRegister');
+const tabs = $$('.tab');
+const indicator = $('#tabIndicator');
+const panels = $$('.tab-panel');
+const btnLogin = $('#loginBtn');
+const btnReg = $('#regBtn');
+const agreeCheck = $('#agreeCheck');
+const agreeCheckReg = $('#agreeCheckReg');
+const otpInput = $('#otpInput');
+const otpCells = $$('#otpCells .otp-cell');
+const otpBox = $('#otpBox');
+const sendCodeBtn = $('#sendCodeBtn');
+const toast = $('#toast');
+const modal = $('#forgotModal');
+const successOverlay = $('#successOverlay');
+const mockKeyboard = $('#mockKeyboard');
+
+/* ---------- 字段工具 ---------- */
+function getInput(name){ return $(`[data-field="${name}"]`); }
+function fieldEl(name){ return $(`[data-field-group="${name}"]`); }
+function setError(name, msg){
+  const f = fieldEl(name), err = $(`[data-error="${name}"]`);
+  if(!f) return;
+  const box = f.querySelector('.input-box') || f.querySelector('.otp');
+  if(box) box.classList.add('is-error');
+  if(err){ err.hidden = false; err.querySelector('span').textContent = msg; }
+  if(box){ box.classList.remove('is-shake'); void box.offsetWidth; box.classList.add('is-shake'); }
+  const input = getInput(name);
+  if(input) input.setAttribute('aria-invalid', 'true');
+}
+function clearError(name){
+  const f = fieldEl(name), err = $(`[data-error="${name}"]`);
+  if(!f) return;
+  f.querySelector('.input-box')?.classList.remove('is-error');
+  f.querySelector('.otp')?.classList.remove('is-error');
+  if(err) err.hidden = true;
+  const input = getInput(name);
+  if(input) input.removeAttribute('aria-invalid');
+}
+function groupFor(name){ return name.startsWith('reg-') ? ['reg-phone','reg-password','reg-confirm'] : currentFields(); }
+function clearAllErrors(){ ['email','password','phone','sms','reg-phone','reg-password','reg-confirm'].forEach(clearError); }
+
+/* ---------- 当前面板字段 ---------- */
+const panelFields = { password: ['email','password'], sms: ['phone','sms'] };
+function currentFields(){ return panelFields[state.tab]; }
+function collectValues(list){
+  const all = {};
+  (list || currentFields()).forEach(n => all[n] = getInput(n).value.trim());
+  return all;
+}
+function isFormValid(list){
+  const all = collectValues(list || currentFields());
+  return (list || currentFields()).every(n => validators[n](all[n], all));
+}
+
+/* ---------- 按钮启停（集中式） ---------- */
+function recompute(){
+  const loginOk = isFormValid() && agreeCheck.checked;
+  btnLogin.disabled = !loginOk || state.submitting;
+  const regOk = isFormValid(['reg-phone','reg-password','reg-confirm']) && agreeCheckReg.checked;
+  btnReg.disabled = !regOk;
+}
+
+/* ---------- Tab 切换 ---------- */
+function switchTab(name){
+  if(state.transitioning || state.submitting) return;
+  state.tab = name;
+  tabs.forEach(t => {
+    const active = t.dataset.tab === name;
+    t.classList.toggle('is-active', active);
+    t.setAttribute('aria-selected', active);
+  });
+  const activeTab = tabs.find(t => t.dataset.tab === name);
+  indicator.style.width = activeTab.offsetWidth + 'px';
+  indicator.style.transform = `translateX(${activeTab.offsetLeft}px)`;
+  const panel = panels.find(p => p.dataset.panel === name);
+  panels.forEach(p => p.hidden = p.dataset.panel !== name);
+  panel.classList.remove('panel-enter');
+  void panel.offsetWidth;
+  panel.classList.add('panel-enter');
+  clearAllErrors();
+  recompute();
+}
+tabs.forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+/* ---------- 输入实时清洗 / 聚焦清错 ---------- */
+const cleaners = {
+  email: v => v.slice(0, 100),
+  password: v => v.slice(0, 20),
+  phone: v => v.replace(/\D/g, '').slice(0, 11),
+  'reg-phone': v => v.replace(/\D/g, '').slice(0, 11),
+  'reg-password': v => v.slice(0, 20),
+  'reg-confirm': v => v.slice(0, 20),
+};
+$$('.text-input').forEach(input => {
+  input.addEventListener('input', () => {
+    const name = input.dataset.field;
+    if(!name) return; // 非表单字段（如弹窗输入框）不参与校验
+    if(cleaners[name]) input.value = cleaners[name](input.value);
+    input.closest('.input-box')?.querySelector('.clear-btn')?.toggleAttribute('hidden', input.value.length === 0);
+    clearError(name);
+    recompute();
+  });
+  input.addEventListener('focus', () => {
+    input.closest('.input-box')?.querySelector('.clear-btn')?.toggleAttribute('hidden', input.value.length === 0);
+  });
+  input.addEventListener('blur', () => {
+    const name = input.dataset.field;
+    if(!name) return; // 非表单字段（如弹窗输入框）不参与校验
+    const v = input.value.trim();
+    if(v && !validators[name](v, collectValues(groupFor(name)))) setError(name, TEXT.error[name]);
+    recompute();
+  });
+});
+
+/* ---------- 密码可见切换 ---------- */
+$$('.pwd-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const name = btn.dataset.toggle;
+    const input = $(`[data-field="${name}"]`);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.setAttribute('aria-pressed', show);
+    btn.querySelector('.icon-eye').hidden = show;
+    btn.querySelector('.icon-eye-off').hidden = !show;
+    requestAnimationFrame(() => { input.focus(); });
+  });
+});
+
+/* ---------- 清空按钮 ---------- */
+$$('.clear-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const name = btn.dataset.clear;
+    const input = $(`[data-field="${name}"]`);
+    input.value = '';
+    btn.hidden = true;
+    clearError(name);
+    recompute();
+    input.focus();
+  });
+});
+
+/* ---------- OTP 渲染 ---------- */
+function renderOtp(){
+  const val = otpInput.value;
+  otpCells.forEach((c, i) => {
+    c.textContent = val[i] || '';
+    c.classList.toggle('is-filled', !!val[i]);
+    c.classList.toggle('is-current', i === val.length);
+  });
+}
+otpInput.addEventListener('input', () => {
+  otpInput.value = otpInput.value.replace(/\D/g, '').slice(0, 6);
+  renderOtp();
+  clearError('sms');
+  recompute();
+});
+otpInput.addEventListener('focus', renderOtp);
+otpInput.addEventListener('blur', () => {
+  const v = otpInput.value.trim();
+  if(v && !validators.sms(v)) setError('sms', TEXT.error.sms);
+  renderOtp();
+  recompute();
+});
+
+/* ---------- 验证码倒计时 ---------- */
+function updateSendBtn(){
+  if(state.countLeft > 0){
+    sendCodeBtn.disabled = true;
+    sendCodeBtn.textContent = TEXT.countdown(state.countLeft);
+  }else{
+    sendCodeBtn.disabled = false;
+    sendCodeBtn.textContent = state.codeSent ? TEXT.sendCodeAgain : TEXT.sendCode;
+  }
+}
+sendCodeBtn.addEventListener('click', () => {
+  const phone = getInput('phone');
+  if(!validators.phone(phone.value.trim())){
+    setError('phone', TEXT.error.phone);
+    phone.focus();
+    return;
+  }
+  clearError('phone');
+  if(state.timerId) return;
+  state.codeSent = true;
+  state.countLeft = 60;
+  updateSendBtn();
+  state.timerId = setInterval(() => {
+    state.countLeft--;
+    updateSendBtn();
+    if(state.countLeft <= 0){ clearInterval(state.timerId); state.timerId = null; updateSendBtn(); }
+  }, 1000);
+  showToast(TEXT.toast.codeSent, 'success');
+});
+/* 表单统一阻止默认提交（原型内所有按钮均走 JS 逻辑） */
+$$('form').forEach(f => f.addEventListener('submit', e => e.preventDefault()));
+
+/* ---------- 协议勾选 ---------- */
+agreeCheck.addEventListener('change', recompute);
+agreeCheckReg.addEventListener('change', recompute);
+$$('.agreement a').forEach(a => a.addEventListener('click', e => {
+  e.preventDefault();
+  showToast(TEXT.toast.protocol(a.dataset.doc === 'user' ? '用户协议' : '隐私政策'), 'info');
+}));
+
+/* ---------- Toast ---------- */
+let toastTimer;
+const toastIcons = {
+  success: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8.5 15 16 6"/></svg>',
+  error: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l8 8M14 6l-8 8"/></svg>',
+  info: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 6.2v.4"/></svg>',
+};
+function showToast(msg, type = 'info'){
+  toast.dataset.type = type;
+  toast.innerHTML = toastIcons[type] + `<span>${msg}</span>`;
+  toast.classList.add('is-visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2200);
+}
+
+/* ---------- 登录流程 ---------- */
+async function doLogin(){
+  if(state.submitting) return;
+  hideKeyboard();
+  const fields = currentFields();
+  const all = collectValues(fields);
+  const invalid = fields.find(n => !validators[n](all[n], all));
+  if(invalid){
+    setError(invalid, TEXT.error[invalid]);
+    getInput(invalid).focus();
+    recompute();
+    return;
+  }
+  if(!agreeCheck.checked){ showToast(TEXT.toast.needAgree, 'error'); return; }
+
+  state.submitting = true;
+  btnLogin.classList.add('is-loading');
+  btnLogin.disabled = true;
+  btnLogin.innerHTML = '<span class="spinner"></span>' + TEXT.loginLoading;
+  await sleep(1400 * ANIM);
+
+  // 模拟校验失败分支（演示：可注释掉）
+  // if(Math.random() < 0.3){ btnLogin.innerHTML = TEXT.btnLogin; ... }
+
+  btnLogin.classList.remove('is-loading');
+  btnLogin.classList.add('is-success');
+  btnLogin.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8.5 15 16 6"/></svg>' + TEXT.loginSuccess;
+  await sleep(400 * ANIM);
+
+  successOverlay.classList.add('is-visible');
+  successOverlay.setAttribute('aria-hidden', 'false');
+  await sleep(2500 * ANIM);
+
+  successOverlay.classList.remove('is-visible');
+  successOverlay.setAttribute('aria-hidden', 'true');
+  resetForm();
+  state.submitting = false;
+  showToast(TEXT.toast.demoDone, 'info');
+}
+btnLogin.addEventListener('click', doLogin);
+
+/* ---------- 注册页过渡 ---------- */
+function goRegister(){
+  if(state.transitioning || state.submitting) return;
+  hideKeyboard();
+  state.transitioning = true;
+  pageLogin.classList.add('is-exit');
+  pageRegister.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    pageRegister.classList.add('is-enter');
+  }));
+  setTimeout(() => { state.transitioning = false; }, 460);
+}
+function goLogin(){
+  if(state.transitioning) return;
+  state.transitioning = true;
+  pageRegister.classList.remove('is-enter');
+  pageLogin.classList.remove('is-exit');
+  ['reg-phone','reg-password','reg-confirm'].forEach(n => { getInput(n).value = ''; clearError(n); });
+  agreeCheckReg.checked = false;
+  setTimeout(() => {
+    pageRegister.hidden = true;
+    state.transitioning = false;
+    recompute();
+  }, 460);
+}
+$('#goRegisterBtn').addEventListener('click', goRegister);
+$('#backBtn').addEventListener('click', goLogin);
+
+/* ---------- 注册提交 ---------- */
+async function doRegister(){
+  const all = collectValues(['reg-phone','reg-password','reg-confirm']);
+  const fields = ['reg-phone','reg-password','reg-confirm'];
+  const invalid = fields.find(n => !validators[n](all[n], all));
+  if(invalid){ setError(invalid, TEXT.error[invalid]); getInput(invalid).focus(); recompute(); return; }
+  if(!agreeCheckReg.checked){ showToast(TEXT.toast.needAgree, 'error'); return; }
+
+  btnReg.classList.add('is-loading');
+  btnReg.disabled = true;
+  btnReg.innerHTML = '<span class="spinner"></span>' + '注册中…';
+  await sleep(1200 * ANIM);
+  btnReg.innerHTML = TEXT.btnRegister;
+  btnReg.classList.remove('is-loading');
+  showToast(TEXT.toast.registerOK, 'success');
+  await sleep(800);
+  goLogin();
+}
+btnReg.addEventListener('click', doRegister);
+
+/* ---------- 忘记密码弹窗 ---------- */
+function openModal(){
+  hideKeyboard();
+  modal.classList.add('is-open');
+  $('#forgotInput').focus();
+}
+function closeModal(){ modal.classList.remove('is-open'); }
+$('#forgotBtn').addEventListener('click', openModal);
+$('#forgotClose').addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+$('#forgotSubmit').addEventListener('click', async () => {
+  const v = $('#forgotInput').value.trim();
+  if(!validators.email(v) && !validators.phone(v)){
+    showToast('请输入正确的手机号或邮箱', 'error');
+    return;
+  }
+  const btn = $('#forgotSubmit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>发送中…';
+  await sleep(900 * ANIM);
+  btn.disabled = false;
+  btn.innerHTML = '发送重置指引';
+  closeModal();
+  showToast(TEXT.toast.resetSent, 'success');
+});
+
+/* ---------- 模拟键盘 ---------- */
+function showKeyboard(){
+  if(state.keyboardOpen) return;
+  state.keyboardOpen = true;
+  app.classList.add('kb-open');
+  mockKeyboard.classList.add('is-open');
+}
+function hideKeyboard(){
+  if(!state.keyboardOpen) return;
+  state.keyboardOpen = false;
+  app.classList.remove('kb-open');
+  mockKeyboard.classList.remove('is-open');
+}
+document.addEventListener('focusin', e => {
+  if(!e.target.matches('input')) return;
+  if(modal.classList.contains('is-open')) return; // 弹窗打开时不弹模拟键盘
+  showKeyboard();
+});
+document.addEventListener('focusout', e => {
+  const t = e.target;
+  if(!t.matches('.text-input, .otp-input')) return;
+  const rt = e.relatedTarget;
+  if(!rt || !(rt.closest && rt.closest('.app'))) hideKeyboard();
+});
+$('#kbDismiss').addEventListener('click', () => { hideKeyboard(); document.activeElement && document.activeElement.blur(); });
+
+/* ---------- 重置 ---------- */
+function resetForm(){
+  if(state.timerId){ clearInterval(state.timerId); state.timerId = null; }
+  state.countLeft = 0;
+  state.codeSent = false;
+  updateSendBtn();
+  $$('.text-input').forEach(i => i.value = '');
+  otpInput.value = '';
+  renderOtp();
+  agreeCheck.checked = false;
+  agreeCheckReg.checked = false;
+  clearAllErrors();
+  state.submitting = false;
+  btnLogin.innerHTML = TEXT.btnLogin;
+  btnLogin.classList.remove('is-loading', 'is-success');
+  btnReg.innerHTML = TEXT.btnRegister;
+  btnReg.classList.remove('is-loading');
+  $$('.clear-btn').forEach(b => b.hidden = true);
+  recompute();
+}
+function resetAll(){
+  resetForm();
+  successOverlay.classList.remove('is-visible');
+  successOverlay.setAttribute('aria-hidden', 'true');
+  closeModal();
+  if(state.tab !== 'password') switchTab('password');
+  goLogin();
+}
+$('#demoReset').addEventListener('click', resetAll);
+$('#demoKb').addEventListener('click', () => state.keyboardOpen ? hideKeyboard() : showKeyboard());
+
+/* ---------- 设备缩放（390×844 → 视口） ---------- */
+function fit(){
+  const W = 390, H = 844, pad = 48;
+  const scale = Math.min((innerWidth - pad) / W, (innerHeight - pad) / H, 1);
+  const wrap = $('#deviceWrap');
+  wrap.style.width = (W * scale) + 'px';
+  wrap.style.height = (H * scale) + 'px';
+  $('#device').style.transform = `scale(${scale})`;
+}
+let fitTimer;
+addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(fit, 120); });
+
+/* ---------- 初始化 ---------- */
+function init(){
+  fit();
+  // Tab 指示器初始位置
+  const activeTab = tabs.find(t => t.dataset.tab === state.tab);
+  indicator.style.width = activeTab.offsetWidth + 'px';
+  indicator.style.transform = `translateX(${activeTab.offsetLeft}px)`;
+  renderOtp();
+  updateSendBtn();
+  recompute();
+}
+window.addEventListener('pagehide', () => { if(state.timerId) clearInterval(state.timerId); });
+init();
+</script>
+</body>
+</html>
