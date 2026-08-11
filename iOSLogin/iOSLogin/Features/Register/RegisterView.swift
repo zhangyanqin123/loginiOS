@@ -149,9 +149,8 @@ struct RegisterView: View {
 
     // MARK: - 协议行
     private var agreeRow: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .center, spacing: 10) {
             CustomCheckbox(isChecked: $agreed)
-                .padding(.top, 1)
 
             HStack(spacing: 0) {
                 Text("我已阅读并同意")
