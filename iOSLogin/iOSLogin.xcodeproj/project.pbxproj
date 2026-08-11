@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0F1FE0FDF041BEB8DD6E416C /* libPods-iOSLogin.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A549F9B968236D9EE53BBAD /* libPods-iOSLogin.a */; };
+		2BED5C64F2634545C45A1669 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 76CF07D2027FE7D2F7D7CF3B /* PrivacyInfo.xcprivacy */; };
 		CC0000000000000000000001 /* iOSLoginApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000001 /* iOSLoginApp.swift */; };
 		CC0000000000000000000002 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000002 /* Theme.swift */; };
 		CC0000000000000000000003 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000003 /* Components.swift */; };
@@ -15,9 +17,12 @@
 		CC0000000000000000000006 /* OTPField.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000006 /* OTPField.swift */; };
 		CC0000000000000000000007 /* SuccessOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000007 /* SuccessOverlay.swift */; };
 		CC0000000000000000000008 /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000008 /* RegisterView.swift */; };
+		CC0000000000000000000009 /* RNDevConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000009 /* RNDevConfig.swift */; };
 		CC000000000000000000000A /* ForgotPasswordSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000000000A /* ForgotPasswordSheet.swift */; };
 		CC000000000000000000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB000000000000000000000B /* Assets.xcassets */; };
 		CC000000000000000000000C /* iOSLoginUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000000000D /* iOSLoginUITests.swift */; };
+		CC000000000000000000000D /* RNDevLauncherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000000000F /* RNDevLauncherView.swift */; };
+		CC000000000000000000000E /* RNContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000010 /* RNContainerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,19 +36,27 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3A549F9B968236D9EE53BBAD /* libPods-iOSLogin.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-iOSLogin.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F842B7D170D56395FE7B151 /* Pods-iOSLogin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSLogin.debug.xcconfig"; path = "Target Support Files/Pods-iOSLogin/Pods-iOSLogin.debug.xcconfig"; sourceTree = "<group>"; };
+		739A6AC5596199F22F0FC409 /* Pods-iOSLogin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSLogin.release.xcconfig"; path = "Target Support Files/Pods-iOSLogin/Pods-iOSLogin.release.xcconfig"; sourceTree = "<group>"; };
+		76CF07D2027FE7D2F7D7CF3B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = ../PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BB0000000000000000000001 /* iOSLoginApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSLoginApp.swift; sourceTree = "<group>"; };
-		BB0000000000000000000002 /* Theme.swift */ = {isa = PBXFileReference; defaultEncoding = 4; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		BB0000000000000000000002 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		BB0000000000000000000003 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		BB0000000000000000000004 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		BB0000000000000000000005 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		BB0000000000000000000006 /* OTPField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTPField.swift; sourceTree = "<group>"; };
 		BB0000000000000000000007 /* SuccessOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuccessOverlay.swift; sourceTree = "<group>"; };
 		BB0000000000000000000008 /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
+		BB0000000000000000000009 /* RNDevConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RNDevConfig.swift; sourceTree = "<group>"; };
 		BB000000000000000000000A /* ForgotPasswordSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordSheet.swift; sourceTree = "<group>"; };
 		BB000000000000000000000B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BB000000000000000000000C /* iOSLogin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSLogin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB000000000000000000000D /* iOSLoginUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSLoginUITests.swift; sourceTree = "<group>"; };
 		BB000000000000000000000E /* iOSLoginUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSLoginUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB000000000000000000000F /* RNDevLauncherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RNDevLauncherView.swift; sourceTree = "<group>"; };
+		BB0000000000000000000010 /* RNContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RNContainerView.swift; sourceTree = "<group>"; };
+		BB0000000000000000000011 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F1FE0FDF041BEB8DD6E416C /* libPods-iOSLogin.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,12 +78,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		92270A0532430A26D7C3CDE9 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				4F842B7D170D56395FE7B151 /* Pods-iOSLogin.debug.xcconfig */,
+				739A6AC5596199F22F0FC409 /* Pods-iOSLogin.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		AA0000000000000000000002 = {
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000003 /* iOSLogin */,
 				AA0000000000000000000010 /* iOSLoginUITests */,
 				AA0000000000000000000004 /* Products */,
+				92270A0532430A26D7C3CDE9 /* Pods */,
+				EF1ED79E1C4168024350FDCB /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -81,6 +107,8 @@
 				AA0000000000000000000007 /* Components */,
 				AA0000000000000000000008 /* Features */,
 				BB000000000000000000000B /* Assets.xcassets */,
+				BB0000000000000000000011 /* Info.plist */,
+				76CF07D2027FE7D2F7D7CF3B /* PrivacyInfo.xcprivacy */,
 			);
 			path = iOSLogin;
 			sourceTree = "<group>";
@@ -92,14 +120,6 @@
 				BB000000000000000000000E /* iOSLoginUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		AA0000000000000000000010 /* iOSLoginUITests */ = {
-			isa = PBXGroup;
-			children = (
-				BB000000000000000000000D /* iOSLoginUITests.swift */,
-			);
-			path = iOSLoginUITests;
 			sourceTree = "<group>";
 		};
 		AA0000000000000000000006 /* DesignSystem */ = {
@@ -124,6 +144,7 @@
 				AA0000000000000000000009 /* Login */,
 				AA000000000000000000000C /* Register */,
 				AA000000000000000000000D /* ForgotPassword */,
+				AA0000000000000000000013 /* RNDev */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -155,6 +176,32 @@
 			path = ForgotPassword;
 			sourceTree = "<group>";
 		};
+		AA0000000000000000000010 /* iOSLoginUITests */ = {
+			isa = PBXGroup;
+			children = (
+				BB000000000000000000000D /* iOSLoginUITests.swift */,
+			);
+			path = iOSLoginUITests;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000013 /* RNDev */ = {
+			isa = PBXGroup;
+			children = (
+				BB0000000000000000000009 /* RNDevConfig.swift */,
+				BB000000000000000000000F /* RNDevLauncherView.swift */,
+				BB0000000000000000000010 /* RNContainerView.swift */,
+			);
+			path = RNDev;
+			sourceTree = "<group>";
+		};
+		EF1ED79E1C4168024350FDCB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3A549F9B968236D9EE53BBAD /* libPods-iOSLogin.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -162,9 +209,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = AA000000000000000000000B /* Build configuration list for PBXNativeTarget "iOSLogin" */;
 			buildPhases = (
+				77C4F142BBCF74B4C5398BDC /* [CP] Check Pods Manifest.lock */,
 				DD0000000000000000000001 /* Sources */,
 				DD0000000000000000000002 /* Frameworks */,
 				DD0000000000000000000003 /* Resources */,
+				2E6498224BF82FCDAABBC4EF /* [CP] Embed Pods Frameworks */,
+				22B13DF37D06845F37D946FC /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -237,6 +287,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CC000000000000000000000B /* Assets.xcassets in Resources */,
+				2BED5C64F2634545C45A1669 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -248,6 +299,65 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		22B13DF37D06845F37D946FC /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-iOSLogin/Pods-iOSLogin-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-iOSLogin/Pods-iOSLogin-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iOSLogin/Pods-iOSLogin-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		2E6498224BF82FCDAABBC4EF /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-iOSLogin/Pods-iOSLogin-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-iOSLogin/Pods-iOSLogin-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iOSLogin/Pods-iOSLogin-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		77C4F142BBCF74B4C5398BDC /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-iOSLogin-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		DD0000000000000000000001 /* Sources */ = {
@@ -263,6 +373,9 @@
 				CC0000000000000000000007 /* SuccessOverlay.swift in Sources */,
 				CC0000000000000000000008 /* RegisterView.swift in Sources */,
 				CC000000000000000000000A /* ForgotPasswordSheet.swift in Sources */,
+				CC0000000000000000000009 /* RNDevConfig.swift in Sources */,
+				CC000000000000000000000D /* RNDevLauncherView.swift in Sources */,
+				CC000000000000000000000E /* RNContainerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,7 +404,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -321,6 +434,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -339,9 +453,17 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				USE_HERMES = true;
 			};
 			name = Debug;
 		};
@@ -351,7 +473,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -381,6 +503,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -392,15 +515,24 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
 		EE0000000000000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4F842B7D170D56395FE7B151 /* Pods-iOSLogin.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -408,10 +540,11 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOSLogin/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -427,6 +560,7 @@
 		};
 		EE0000000000000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 739A6AC5596199F22F0FC409 /* Pods-iOSLogin.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -434,10 +568,11 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOSLogin/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

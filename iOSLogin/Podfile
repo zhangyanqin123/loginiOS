@@ -1,0 +1,45 @@
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+flipper_config = FlipperConfiguration.disabled   # 关 Flipper 避免网络问题
+
+# ⚠️ 仓库根无 ios/ 目录 → react-native config 的 project.ios 为 null，必须兜底。
+# 先跑 config，再把 sourceDir 修正为本 Podfile 目录，使 autolinking 的 pod :path
+# 与 reactNativePath 都相对本目录解析（CocoaPods 按 Podfile 目录解析相对 path）。
+require 'json'
+cli_resolve_script = "try {console.log(require('@react-native-community/cli').bin);} catch (e) {console.log(require('react-native/cli').bin);}"
+cli_bin = Pod::Executable.execute_command('node', ['-e', cli_resolve_script], true).strip
+json_lines = []
+IO.popen(['node', cli_bin, 'config']) do |data|
+  while (line = data.gets)
+    json_lines << line
+  end
+end
+shell_config = JSON.parse(json_lines.join("\n"))
+shell_config['project'] ||= {}
+shell_config['project']['ios'] ||= {}
+shell_config['project']['ios']['sourceDir'] = __dir__
+
+target 'iOSLogin' do
+  config = use_native_modules!(shell_config)
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    :flipper_configuration => flipper_config,
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false
+    )
+  end
+end

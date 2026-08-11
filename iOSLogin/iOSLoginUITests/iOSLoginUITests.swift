@@ -116,4 +116,37 @@ final class iOSLoginUITests: XCTestCase {
         app.buttons["返回登录"].tap()
         XCTAssertTrue(app.staticTexts["欢迎回来"].waitForExistence(timeout: 3))
     }
+
+    // MARK: - RN 调试入口（DEBUG only，需 Metro 8081 运行）
+    @MainActor
+    func testRNDevEntryLoads() throws {
+        let app = launchApp()
+
+        // 浮动按钮 → 调试面板
+        let debugBtn = app.buttons["rnDevButton"]
+        XCTAssertTrue(debugBtn.waitForExistence(timeout: 5), "DEBUG 构建应显示 RN 调试浮动按钮")
+        debugBtn.tap()
+
+        // 面板：AppName 预填默认注册名、端口预填 8081
+        let launchBtn = app.buttons["rnDevLaunchButton"]
+        XCTAssertTrue(launchBtn.waitForExistence(timeout: 3), "点击浮动按钮应出现调试面板")
+        let appNameField = app.textFields["AppRegistry 注册名"]
+        XCTAssertTrue(appNameField.exists)
+        if let value = appNameField.value as? String, !value.isEmpty {
+            XCTAssertEqual(value, "MarketCoreRNApp", "AppName 应预填默认注册名")
+        }
+
+        // 启动 → 全屏 RN 容器（顶部调试栏出现）
+        launchBtn.tap()
+        let backBtn = app.buttons["rnDevBackButton"]
+        XCTAssertTrue(backBtn.waitForExistence(timeout: 10), "应呈现 RN 全屏容器")
+        XCTAssertTrue(app.buttons["rnDevReloadButton"].exists, "容器应带 Reload 按钮")
+
+        // Reload 可点（验证不崩溃）
+        app.buttons["rnDevReloadButton"].tap()
+
+        // 返回登录页
+        backBtn.tap()
+        XCTAssertTrue(app.staticTexts["欢迎回来"].waitForExistence(timeout: 5), "返回后应回到登录页")
+    }
 }

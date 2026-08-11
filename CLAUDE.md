@@ -10,12 +10,12 @@ iOS 登录页原生实现：将根目录 `index.html`（高保真交互原型）
 
 ```bash
 cd iOSLogin
-# 构建（模拟器，产物输出到 build/）
-xcodebuild -project iOSLogin.xcodeproj -scheme iOSLogin \
+# 构建（模拟器，产物输出到 build/；接入 CocoaPods 后必须用 workspace）
+xcodebuild -workspace iOSLogin.xcworkspace -scheme iOSLogin \
   -destination 'platform=iOS Simulator,name=iPhone 14' \
   -derivedDataPath build build
-# 运行 XCUITest（4 条验收用例）
-xcodebuild -project iOSLogin.xcodeproj -scheme iOSLogin \
+# 运行 XCUITest（5 条验收用例，含 RN 调试入口链路）
+xcodebuild -workspace iOSLogin.xcworkspace -scheme iOSLogin \
   -destination 'platform=iOS Simulator,name=iPhone 14' test
 # 安装并启动
 xcrun simctl install booted build/Build/Products/Debug-iphonesimulator/iOSLogin.app
@@ -25,7 +25,21 @@ bash scripts/ios-reload.sh          # 交互模式：首次部署 + 注册监听
 bash scripts/ios-reload.sh deploy   # watchman 回调入口（单次部署，一般不自调用）
 ```
 
+注意：`rm -rf iOSLogin/build/` 清空产物后，`build/generated/ios`（React-Codegen 生成物）也会消失，**必须重跑 `pod install`** 才能恢复构建。
+
 约束：部署目标 iOS 16.0、Swift 5.0、仅 iPhone、bundle id `com.example.iOSLogin`。工程用 Xcode 14.1，避免使用 Xcode 15+ API（`#Preview` 宏、`ContentUnavailableView` 等）。热更新方案细节见 `iOS模拟器热更新方案.md`。
+
+## RN 调试入口（DEBUG only）
+
+Debug 构建下登录页右下角有 RN 调试浮动按钮（`rnDevButton`），可输入 **AppName（AppRegistry 注册名）** 与 **端口**（默认 8081）加载 RN 工程：
+
+- 依赖：仓库根 `node_modules` 是**软链**，指向 RN 工程 `/Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp/node_modules`。重建：`cd /Users/a1/Documents/iOSSwiftLogin && rm -f node_modules && ln -s /Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp/node_modules node_modules`
+- `pod install` 触发条件：首次、改 `Podfile`/`package.json` 后、`rm -rf iOSLogin/build/` 后；均在 `iOSLogin/` 下执行
+- Metro 启动：`cd /Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp && npx react-native start`（8081）
+- 使用：启动 App → 点浮动按钮 → 面板预填 `MarketCoreRNApp`/8081 → 点「启动」（先 ping Metro /status，未启动弹 Toast）→ 全屏 RN 容器（顶部：返回 / Reload / DevMenu）
+- 约束：仅模拟器（宿主机 localhost）；真机需把 `RNDevConfig` 的 host 改为 Mac 局域网 IP。Release 不含入口 UI，但 RN 静态库仍链接（包体膨胀，调试定位可接受）
+- **`Features/RNDev/` 下新文件必须整体包 `#if DEBUG`**；RN 容器用 `fullScreenCover` 呈现，不用 NavigationStack
+- 崩溃防护：SwiftUI 生命周期 App 的隐式 AppDelegate 无 `window` 属性，会让 `RCTAppearance` 崩溃——`iOSLoginApp.swift` 已挂 `AppDelegate`（`@UIApplicationDelegateAdaptor`）暴露 `window`，勿删
 
 ## 架构
 
@@ -52,7 +66,7 @@ MVVM 分层，`iOSLogin/iOSLogin/` 下：
 
 ## 测试
 
-`iOSLoginUITests` 通过 **accessibility 树**验证（不依赖像素渲染——本机 Intel 模拟器无图形会话下截图全黑）。新增 UI 时给关键元素加 `accessibilityIdentifier`/`accessibilityLabel`（如 `agreementCheckbox`、`otpInput`），测试按文案或 identifier 定位。4 条用例覆盖：元素齐全、密码登录全流程、验证码链路、注册页导航。
+`iOSLoginUITests` 通过 **accessibility 树**验证（不依赖像素渲染——本机 Intel 模拟器无图形会话下截图全黑）。新增 UI 时给关键元素加 `accessibilityIdentifier`/`accessibilityLabel`（如 `agreementCheckbox`、`otpInput`），测试按文案或 identifier 定位。5 条用例覆盖：元素齐全、密码登录全流程、验证码链路、注册页导航、RN 调试入口链路（`testRNDevEntryLoads`，需 Metro 8081 先启动）。
 
 ## 已知边界
 

@@ -8,6 +8,8 @@
 #
 # 依赖：watchman（macOS 系统工具，已安装）、Xcode 命令行工具
 # 位置：必须位于仓库根目录的 scripts/ 下（此仓库的 Xcode 工程在 iOSLogin/ 子目录）
+# 注意：接入 CocoaPods 后构建须用 -workspace iOSLogin.xcworkspace；
+#       若 rm -rf iOSLogin/build/ 清空产物，需先重跑 `pod install`（build/generated/ios 是生成物）
 # ============================================================
 set -uo pipefail
 
@@ -33,7 +35,8 @@ log() { echo "[$(date '+%H:%M:%S')] $*" >> "$LOG_FILE"; }
 deploy() {
   local t0=$(date +%s)
   log "▶ 检测到变化，开始增量构建…"
-  if xcodebuild -project iOSLogin.xcodeproj -scheme "$SCHEME" \
+  # 接入 CocoaPods 后必须用 workspace 构建（含 RN 依赖）
+  if xcodebuild -workspace iOSLogin.xcworkspace -scheme "$SCHEME" \
       -destination "$DESTINATION" -derivedDataPath "$DERIVED_DATA" \
       build >> "$LOG_FILE" 2>&1; then
     log "✔ 构建成功（+$(( $(date +%s) - t0 ))s），安装并重启"
@@ -72,7 +75,8 @@ watchman -j >/dev/null <<EOF
       ["match", "**/*.xcscheme", "wholename"]],
     ["not", ["match", "**/build/**", "wholename"]],
     ["not", ["match", "**/.git/**", "wholename"]],
-    ["not", ["match", "**/.watchman/**", "wholename"]]],
+    ["not", ["match", "**/.watchman/**", "wholename"]],
+    ["not", ["match", "**/Pods/**", "wholename"]]],
   "command": ["/bin/bash", "-c", "\"$REPO_DIR/scripts/ios-reload.sh\" deploy >> \"$LOG_FILE\" 2>&1"]
 }]
 EOF

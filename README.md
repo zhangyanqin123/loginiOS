@@ -275,6 +275,31 @@ SwiftUI：内容容器使用 `safeAreaPadding()` 或 `.padding(.horizontal, 24)`
 - **未包含第三方登录**（Apple / 微信 / Google）——已按决策剔除
 - 模拟键盘为纯视觉演示，真实 App 使用系统键盘
 
+## 9. RN 调试入口（开发辅助，DEBUG-only）
+
+供开发期在原生 App 内直接加载 React Native 工程（如 `MarketCoreRNApp`），免去单独跑 RN 壳工程。**仅 Debug 构建可见，Release 无此入口。**
+
+### 9.1 使用步骤
+
+1. 启动 Metro：`cd /Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp && npx react-native start`
+2. 安装并启动 App（Debug），登录页**右下角**出现 RN 调试浮动按钮（`rnDevButton`）
+3. 点击按钮 → 调试面板：**AppName** 预填 `MarketCoreRNApp`（AppRegistry 注册名，需与 RN 工程 `app.json` 的 `name` 一致）、**端口**预填 8081
+4. 点「启动」→ 先探测 Metro `/status`（未启动弹 Toast 提示）→ 全屏 RN 容器
+5. 容器顶部操作栏：返回 / 标题（AppName + 端口）/ Reload / DevMenu
+
+### 9.2 工程依赖（仅开发机）
+
+- 仓库根 `node_modules` 为**软链**：`ln -s /Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp/node_modules node_modules`
+- CocoaPods 接入：`cd iOSLogin && pod install`（`Podfile` 已复刻外观壳工程的 `react-native config` 修正，适配仓库子目录）
+- 构建/测试须用 `-workspace iOSLogin.xcworkspace`（见 CLAUDE.md）
+- `Features/RNDev/`：`RNDevConfig`（URL 构造/端口探测）、`RNDevLauncherView`（面板）、`RNContainerView`（RCTRootView 容器）
+
+### 9.3 已知边界
+
+- 仅模拟器（`localhost` 直连宿主机 Metro）；真机需改 `RNDevConfig` 的 host 为 Mac 局域网 IP
+- Release 包体含 RN 静态库（`#if DEBUG` 只裁 UI 不裁链接）
+- `rm -rf iOSLogin/build/` 后需重跑 `pod install`（`build/generated/ios` 为生成物）
+
 ---
 
 *原型文件：`index.html` · 设计规范：本文件 · 产出日期：2026-08-10*

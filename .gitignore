@@ -17,3 +17,11 @@ project.xcworkspace/
 # Swift Package Manager
 .build/
 .swiftpm/
+# CocoaPods（Podfile/Podfile.lock 与 iOSLogin.xcworkspace 保留提交，Pods 产物忽略）
+Pods/
+
+# RN 调试软链（指向 MarketCoreRNApp/node_modules；软链是文件，忽略不带斜杠）
+node_modules
+
+# RN 本地环境覆盖（.xcode.env 保留提交，.xcode.env.local 是本机 node 路径）
+.xcode.env.local
