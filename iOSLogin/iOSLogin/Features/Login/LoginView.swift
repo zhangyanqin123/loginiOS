@@ -186,18 +186,20 @@ struct LoginView: View {
                 .modifier(ShakeEffect(animatableData: shakePhone))
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("验证码")
-                    .font(Theme.fontCaption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(vm.otpError != nil ? Theme.error : Theme.text2)
-                    .padding(.leading, 2)
-
-                HStack(spacing: 10) {
-                    OTPField(otp: $vm.otp,
-                             isError: vm.otpError != nil,
-                             shakeCount: shakeOTP)
+                // 标题行：左侧「验证码」，右侧发送按钮 —— 避免与 6 格挤在同一行
+                HStack(spacing: 0) {
+                    Text("验证码")
+                        .font(Theme.fontCaption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(vm.otpError != nil ? Theme.error : Theme.text2)
+                        .padding(.leading, 2)
+                    Spacer()
                     sendCodeButton
                 }
+
+                OTPField(otp: $vm.otp,
+                         isError: vm.otpError != nil,
+                         shakeCount: shakeOTP)
 
                 if let err = vm.otpError {
                     FieldError(text: err)
@@ -206,7 +208,7 @@ struct LoginView: View {
         }
     }
 
-    // MARK: - 发送验证码按钮
+    // MARK: - 发送验证码按钮（标题行右侧，小尺寸描边胶囊）
     private var sendCodeButton: some View {
         Button {
             if Validator.isValidPhone(vm.phone) {
@@ -217,13 +219,14 @@ struct LoginView: View {
             }
         } label: {
             Text(vm.sendCodeTitle)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(vm.countdown > 0 ? Theme.text3 : Theme.primary)
-                .frame(width: 108, height: Theme.otpCellHeight)
+                .padding(.horizontal, 12)
+                .frame(height: 32)
                 .background(vm.countdown > 0 ? Color.clear : Theme.primary.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: Theme.radiusOTP))
+                .clipShape(Capsule())
                 .overlay(
-                    RoundedRectangle(cornerRadius: Theme.radiusOTP)
+                    Capsule()
                         .stroke(vm.countdown > 0 ? Theme.border : Theme.primary.opacity(0.28),
                                 lineWidth: 1.5)
                 )

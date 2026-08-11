@@ -139,6 +139,8 @@ SwiftUI：内容容器使用 `safeAreaPadding()` 或 `.padding(.horizontal, 24)`
 
 倒计时 **60s**，归零后恢复「重新获取」。
 
+**位置**：常驻「验证码」标题行右侧的小尺寸描边胶囊（约 32pt 高），与下方 6 个 OTP 格子**不同行**——避免 390pt 宽下格子被压缩成细柱。
+
 ### 4.3 OTP 验证码（6 位）
 
 **推荐实现**：单个 `TextField`（`textContentType = .oneTimeCode`，可触发 iOS 短信自动填充）+ 下层 6 个视觉格（`Text` 展示字符）。输入层文字透明、caret 品牌色，实时按长度回填格子并高亮当前位。
