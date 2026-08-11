@@ -8,6 +8,9 @@ xcuserdata/
 *.xcuserstate
 *.xcscmblueprint
 
+# Xcode 自动生成的 workspace
+project.xcworkspace/
+
 # Xcode 生成的 scheme（共享 scheme 保留，用户级排除）
 *.xcscheme.user*
 

@@ -306,3 +306,10 @@ struct LoginView: View {
         }
     }
 }
+
+// MARK: - Xcode Preview
+struct LoginView_Previews: PreviewProvider {
+    static var previews: some View {
+        LoginView()
+    }
+}
