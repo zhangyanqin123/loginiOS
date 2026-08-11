@@ -20,9 +20,12 @@ xcodebuild -project iOSLogin.xcodeproj -scheme iOSLogin \
 # 安装并启动
 xcrun simctl install booted build/Build/Products/Debug-iphonesimulator/iOSLogin.app
 xcrun simctl launch booted com.example.iOSLogin
+# 模拟器"类热更新"（watchman 监听 .swift / pbxproj / xcscheme，保存即自动构建+安装+重启）
+bash scripts/ios-reload.sh          # 交互模式：首次部署 + 注册监听；Ctrl+C 停止并清理
+bash scripts/ios-reload.sh deploy   # watchman 回调入口（单次部署，一般不自调用）
 ```
 
-约束：部署目标 iOS 16.0、Swift 5.0、仅 iPhone、bundle id `com.example.iOSLogin`。工程用 Xcode 14.1，避免使用 Xcode 15+ API（`#Preview` 宏、`ContentUnavailableView` 等）。
+约束：部署目标 iOS 16.0、Swift 5.0、仅 iPhone、bundle id `com.example.iOSLogin`。工程用 Xcode 14.1，避免使用 Xcode 15+ API（`#Preview` 宏、`ContentUnavailableView` 等）。热更新方案细节见 `iOS模拟器热更新方案.md`。
 
 ## 架构
 
@@ -41,7 +44,8 @@ MVVM 分层，`iOSLogin/iOSLogin/` 下：
 - **表单状态集中在 ViewModel**：字段值、错误、`ButtonState`、倒计时的启用一律集约在 `LoginViewModel`，视图侧只放 UIKit 无关的 UI 状态（`@State` 用于 shake 计数等）。`onChange(of:)` 统一调 `recomputeButton()` 做按钮启停。
 - **倒计时用 Combine `Timer.publish`**，不用 `Timer.scheduledTimer`（后者闭包会触发 Sendable 并发捕获编译错误）；`deinit`/`onDisappear` 清理。
 - **登录/注册/发送重置均为模拟流程**：`Task.sleep` 占位（登录 1.4s→success 400ms→遮罩 2.5s）。接真实接口时替换这些占位点，`Validator` 与状态机保留。
-- **OTP 用单 TextField + 6 视觉格子**（透明文字层叠，`textContentType(.oneTimeCode)` 支持短信填充），不是 6 个独立输入框。
+- **OTP 用单 TextField + 6 视觉格子**（透明文字层叠，`textContentType(.oneTimeCode)` 支持短信填充），不是 6 个独立输入框。发送验证码按钮是标题行右侧的小尺寸描边胶囊（`sendCodeButton`），与 OTP 格子分行布局，不挤同一行。
+- **Xcode Preview 用 `PreviewProvider`**（见 `LoginView` 底部 `LoginView_Previews`），不要写 `#Preview` 宏（Xcode 15+ API，与工程约束冲突）。
 - **页面切换不用 NavigationStack**：注册页用 ZStack + offset/fade 自绘过渡；返回按钮是自定义左上角按钮（`accessibilityLabel("返回登录")`）。
 - **App 强制浅色**：`RootView` 上有 `preferredColorScheme(.light)`，接深色模式时移除并补深色令牌。
 - **工程文件手写**：`project.pbxproj` 为手写（xcodegen 不可用，objectVersion 50），编辑需保证括号平衡；共享 scheme 在 `xcshareddata/xcschemes`。
