@@ -15,6 +15,8 @@ PODS:
     - hermes-engine/Pre-built (= 0.73.11)
   - hermes-engine/Pre-built (0.73.11)
   - libevent (2.1.12)
+  - MarketCoreBridge (0.1.0):
+    - React-Core
   - MMKV (2.4.0):
     - MMKVCore (~> 2.4.0)
   - MMKVCore (2.4.0)
@@ -1095,6 +1097,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - libevent (~> 2.1.12)
+  - MarketCoreBridge (from `../../gitlab/gyz-h5-marketcore/MarketCoreRNApp/ios`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
@@ -1169,6 +1172,8 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2024-04-29-RNv0.73.8-644c8be78af1eae7c138fa4093fb87f0f4f8db85
+  MarketCoreBridge:
+    :path: "../../gitlab/gyz-h5-marketcore/MarketCoreRNApp/ios"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTRequired:
@@ -1277,6 +1282,7 @@ SPEC CHECKSUMS:
   glog: 035f1e36e53b355cf70f6434d161b36e7d21fecd
   hermes-engine: d992945b77c506e5164e6a9a77510c9d57472c59
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
+  MarketCoreBridge: 39cf04c2e618c49927e9268d1a6308857e376c8d
   MMKV: 86859fdfa2b0b21db1fd6e48788474a6416a2c77
   MMKVCore: 3d16ce9f7d411e135020915fde98a056859a1efa
   RCT-Folly: 7169b2b1c44399c76a47b5deaaba715eeeb476c0
@@ -1330,6 +1336,6 @@ SPEC CHECKSUMS:
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: a813a6d82538ccba91c54406404e3ed80b48a692
 
-PODFILE CHECKSUM: 33915c5faeb759bc6e74f5196d75306882ae6348
+PODFILE CHECKSUM: e36fd2b45733e19a906d9e8af70e9402106caac5
 
 COCOAPODS: 1.16.2

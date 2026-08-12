@@ -34,6 +34,7 @@ bash scripts/ios-reload.sh deploy   # watchman 回调入口（单次部署，一
 Debug 构建下登录页右下角有 RN 调试浮动按钮（`rnDevButton`），可输入 **AppName（AppRegistry 注册名）**、**Metro Host**（默认 localhost）与 **端口**（默认 8081）加载 RN 工程：
 
 - 依赖：仓库根 `node_modules` 是**软链**，指向 RN 工程 `/Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp/node_modules`。重建：`cd /Users/a1/Documents/iOSSwiftLogin && rm -f node_modules && ln -s /Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp/node_modules node_modules`
+- **原生桥 `MarketCoreBridge`**（RN 侧 `NativeModules.MarketCoreBridge`，监听 `onPlateParams`/`onThemeInfo`）经本地 pod 编译进本工程：`Podfile` 中 `pod 'MarketCoreBridge', :path => '../../gitlab/gyz-h5-marketcore/MarketCoreRNApp/ios'`。podspec 与源码**单一来源在 RN 工程**（`MarketCoreRNApp/ios/MarketCoreBridge.podspec` + `ios/MarketCoreRNApp/MarketCoreBridge.{h,m}`），改桥代码后重跑 `pod install` 即生效，勿在本仓库拷贝副本
 - `pod install` 触发条件：首次、改 `Podfile`/`package.json` 后、`rm -rf iOSLogin/build/` 后；均在 `iOSLogin/` 下执行
 - Metro 启动：`cd /Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp && npx react-native start`（8081）
 - 使用：启动 App → 点浮动按钮 → 面板预填 `MarketCoreRNApp`/`localhost`/8081 → 点「启动」（先 ping Metro /status，未启动弹 Toast）→ 全屏 RN 容器（顶部：返回 / Reload / DevMenu）

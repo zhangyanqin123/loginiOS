@@ -29,6 +29,10 @@ shell_config['project']['ios']['sourceDir'] = __dir__
 target 'iOSLogin' do
   config = use_native_modules!(shell_config)
 
+  # 桥接源码单一来源：RN 工程 ios/ 下的本地 podspec（消除 NativeModules.MarketCoreBridge === undefined WARN）
+  # 相对路径按 Podfile 目录（iOSLogin/）解析：../../gitlab/gyz-h5-marketcore/MarketCoreRNApp/ios
+  pod 'MarketCoreBridge', :path => '../../gitlab/gyz-h5-marketcore/MarketCoreRNApp/ios'
+
   use_react_native!(
     :path => config[:reactNativePath],
     :flipper_configuration => flipper_config,
