@@ -52,7 +52,7 @@ struct RNContainerView: View {
 
             Spacer()
 
-            Text("\(request.moduleName)\nlocalhost:\(request.port)")
+            Text("\(request.moduleName)\n\(request.host):\(request.port)")
                 .font(Theme.fontMicro)
                 .foregroundColor(Theme.text3)
                 .multilineTextAlignment(.center)
@@ -112,7 +112,7 @@ final class RNDevBridgeDelegate: NSObject, RCTBridgeDelegate {
     }
 
     func sourceURL(for bridge: RCTBridge) -> URL? {
-        RNDevConfig.bundleURL(port: request.port, bundleRoot: request.bundleRoot)
+        RNDevConfig.bundleURL(host: request.host, port: request.port, bundleRoot: request.bundleRoot)
     }
 }
 

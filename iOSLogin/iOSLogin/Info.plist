@@ -9,5 +9,7 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>调试模式下连接局域网内的 Metro 开发服务器</string>
 </dict>
 </plist>

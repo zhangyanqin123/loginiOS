@@ -12,6 +12,7 @@ struct RNDevLauncherView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var moduleName: String
     @State private var port: String
+    @State private var host: String
     @State private var isLaunching = false
     @State private var toast: ToastMessage?
 
@@ -20,8 +21,10 @@ struct RNDevLauncherView: View {
         let d = UserDefaults.standard
         let savedName = d.string(forKey: RNDevConfig.defaultsKeyModuleName)
         let savedPort = d.object(forKey: RNDevConfig.defaultsKeyPort) as? Int
+        let savedHost = d.string(forKey: RNDevConfig.defaultsKeyHost)
         _moduleName = State(initialValue: savedName ?? RNDevConfig.defaultModuleName)
         _port = State(initialValue: String(savedPort ?? RNDevConfig.defaultPort))
+        _host = State(initialValue: savedHost ?? RNDevConfig.defaultHost)
     }
 
     var body: some View {
@@ -33,6 +36,13 @@ struct RNDevLauncherView: View {
                        text: $moduleName,
                        maxLength: 64)
                 .padding(.top, 24)
+            InputField(icon: "network",
+                       title: "Metro Host",
+                       placeholder: "如 192.168.1.5",
+                       text: $host,
+                       keyboardType: .URL,
+                       maxLength: 253)
+                .padding(.top, Theme.fieldSpacing)
             InputField(icon: "number",
                        title: "端口",
                        placeholder: "8081",
@@ -71,24 +81,34 @@ struct RNDevLauncherView: View {
             toast = ToastMessage(text: "AppName 不能为空", type: .error)
             return
         }
+        let host = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        // 白名单天然挡住 http://、端口、空格等注入（URLComponents.host 遇非法字符会返回 nil 静默失败）
+        let hostChars = CharacterSet(charactersIn:
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_")
+        guard !host.isEmpty, host.unicodeScalars.allSatisfy({ hostChars.contains($0) }) else {
+            toast = ToastMessage(text: "Host 仅支持 IP/域名（如 192.168.1.5），不要带 http://",
+                                 type: .error)
+            return
+        }
         guard let portInt = Int(port), (1...65535).contains(portInt) else {
             toast = ToastMessage(text: "端口需为 1-65535 的整数", type: .error)
             return
         }
         UserDefaults.standard.set(name, forKey: RNDevConfig.defaultsKeyModuleName)
         UserDefaults.standard.set(portInt, forKey: RNDevConfig.defaultsKeyPort)
+        UserDefaults.standard.set(host, forKey: RNDevConfig.defaultsKeyHost)
         isLaunching = true
         Task {
             // isPackagerRunning 内部信号量阻塞，放后台线程探测
             let running = await Task.detached(priority: .userInitiated) {
-                RNDevConfig.isMetroRunning(port: portInt)
+                RNDevConfig.isMetroRunning(host: host, port: portInt)
             }.value
             await MainActor.run {
                 isLaunching = false
                 if running {
-                    onLaunch(RNLaunchRequest(moduleName: name, port: portInt))
+                    onLaunch(RNLaunchRequest(moduleName: name, port: portInt, host: host))
                 } else {
-                    toast = ToastMessage(text: "Metro 未启动（localhost:\(portInt)），请先 npx react-native start",
+                    toast = ToastMessage(text: "Metro 未启动（\(host):\(portInt)），请先 npx react-native start",
                                          type: .error)
                 }
             }

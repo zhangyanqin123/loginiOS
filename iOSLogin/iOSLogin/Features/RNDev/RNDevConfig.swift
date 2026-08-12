@@ -14,15 +14,18 @@ enum RNDevConfig {
     /// Metro 入口文件名（MarketCoreRNApp 的 metro 默认入口 index.js）
     static let defaultBundleRoot = "index"
     static let defaultPort = 8081
+    /// Metro 默认 host：模拟器连本机 localhost；真机在面板里填开发机局域网 IP
+    static let defaultHost = "localhost"
 
     static let defaultsKeyModuleName = "rnDev.moduleName"
     static let defaultsKeyPort = "rnDev.port"
+    static let defaultsKeyHost = "rnDev.host"
 
-    /// 构造 Metro bundle URL：http://localhost:<port>/<root>.bundle?platform=ios&dev=true
-    static func bundleURL(port: Int, bundleRoot: String = defaultBundleRoot) -> URL? {
+    /// 构造 Metro bundle URL：http://<host>:<port>/<root>.bundle?platform=ios&dev=true
+    static func bundleURL(host: String = defaultHost, port: Int, bundleRoot: String = defaultBundleRoot) -> URL? {
         var c = URLComponents()
         c.scheme = "http"
-        c.host = "localhost"
+        c.host = host
         c.port = port
         c.path = "/\(bundleRoot).bundle"
         c.queryItems = [
@@ -33,8 +36,8 @@ enum RNDevConfig {
     }
 
     /// 阻塞式探测 Metro /status（内部信号量同步），必须在后台线程调用
-    static func isMetroRunning(port: Int) -> Bool {
-        RCTBundleURLProvider.isPackagerRunning("localhost:\(port)", scheme: "http")
+    static func isMetroRunning(host: String = defaultHost, port: Int) -> Bool {
+        RCTBundleURLProvider.isPackagerRunning("\(host):\(port)", scheme: "http")
     }
 }
 
@@ -43,6 +46,7 @@ struct RNLaunchRequest: Identifiable {
     let id = UUID()
     let moduleName: String
     let port: Int
+    var host: String = RNDevConfig.defaultHost
     var bundleRoot: String = RNDevConfig.defaultBundleRoot
 }
 

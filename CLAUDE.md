@@ -31,13 +31,13 @@ bash scripts/ios-reload.sh deploy   # watchman 回调入口（单次部署，一
 
 ## RN 调试入口（DEBUG only）
 
-Debug 构建下登录页右下角有 RN 调试浮动按钮（`rnDevButton`），可输入 **AppName（AppRegistry 注册名）** 与 **端口**（默认 8081）加载 RN 工程：
+Debug 构建下登录页右下角有 RN 调试浮动按钮（`rnDevButton`），可输入 **AppName（AppRegistry 注册名）**、**Metro Host**（默认 localhost）与 **端口**（默认 8081）加载 RN 工程：
 
 - 依赖：仓库根 `node_modules` 是**软链**，指向 RN 工程 `/Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp/node_modules`。重建：`cd /Users/a1/Documents/iOSSwiftLogin && rm -f node_modules && ln -s /Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp/node_modules node_modules`
 - `pod install` 触发条件：首次、改 `Podfile`/`package.json` 后、`rm -rf iOSLogin/build/` 后；均在 `iOSLogin/` 下执行
 - Metro 启动：`cd /Users/a1/Documents/gitlab/gyz-h5-marketcore/MarketCoreRNApp && npx react-native start`（8081）
-- 使用：启动 App → 点浮动按钮 → 面板预填 `MarketCoreRNApp`/8081 → 点「启动」（先 ping Metro /status，未启动弹 Toast）→ 全屏 RN 容器（顶部：返回 / Reload / DevMenu）
-- 约束：仅模拟器（宿主机 localhost）；真机需把 `RNDevConfig` 的 host 改为 Mac 局域网 IP。Release 不含入口 UI，但 RN 静态库仍链接（包体膨胀，调试定位可接受）
+- 使用：启动 App → 点浮动按钮 → 面板预填 `MarketCoreRNApp`/`localhost`/8081 → 点「启动」（先 ping Metro /status，未启动弹 Toast）→ 全屏 RN 容器（顶部：返回 / Reload / DevMenu）
+- 约束：模拟器默认 localhost 零配置；真机调试把面板 **Metro Host** 填开发机局域网 IP（iOS 14+ 首次连接弹 Local Network 权限窗，Info.plist 已补 `NSLocalNetworkUsageDescription`），host 校验仅允许 IP/域名（拒绝 `http://`、端口等）。Release 不含入口 UI，但 RN 静态库仍链接（包体膨胀，调试定位可接受）
 - **`Features/RNDev/` 下新文件必须整体包 `#if DEBUG`**；RN 容器用 `fullScreenCover` 呈现，不用 NavigationStack
 - 崩溃防护：SwiftUI 生命周期 App 的隐式 AppDelegate 无 `window` 属性，会让 `RCTAppearance` 崩溃——`iOSLoginApp.swift` 已挂 `AppDelegate`（`@UIApplicationDelegateAdaptor`）暴露 `window`，勿删
 
